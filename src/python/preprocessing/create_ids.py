@@ -1,4 +1,4 @@
-""" Script to create train, validation and test data lists with paths to images and radiological reports. """
+""" Script to create train, validation and test data lists with paths to t1w and flair images. """
 import argparse
 from pathlib import Path
 
@@ -21,7 +21,9 @@ def main(args):
     data_list = []
     for image_path in images_paths:
         if "unusable" not in str(image_path):
-            data_list.append({"t1w": str(image_path), "flair": str(image_path).replace("T1w", "FLAIR")})
+            flair_path = str(image_path).replace("T1w", "FLAIR")
+            if Path(flair_path).exists():
+                data_list.append({"t1w": str(image_path), "flair": flair_path})
 
     data_df = pd.DataFrame(data_list)
     data_df = data_df.sample(frac=1, random_state=42).reset_index(drop=True)
