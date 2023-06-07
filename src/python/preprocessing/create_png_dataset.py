@@ -36,8 +36,8 @@ def main(args):
                 t1w = t1w.get_fdata()
                 flair = flair.get_fdata()
 
-                t1w = t1w[16:176, 16:240, 166:176]
-                flair = flair[16:176, 16:240, 166:176]
+                t1w = t1w[16:176, 16:240, 166:171]
+                flair = flair[16:176, 16:240, 166:171]
 
                 t1w = t1w.astype("float32")
                 flair = flair.astype("float32")
