@@ -1,7 +1,6 @@
-
-for i in {0..1};do
-  start=$((i*500))
-  stop=$(((i+1)*500))
+for i in {0..39};do
+  start=$((i*1000))
+  stop=$(((i+1)*1000))
 
   runai submit \
     --name create-dataset-${start}-${stop} \
