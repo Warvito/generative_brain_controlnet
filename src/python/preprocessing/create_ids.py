@@ -28,9 +28,9 @@ def main(args):
     data_df = pd.DataFrame(data_list)
     data_df = data_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
-    train_data_list = data_df[:40000]
-    val_data_list = data_df[40000:40500]
-    test_data_list = data_df[40500:]
+    train_data_list = data_df[:39000]
+    val_data_list = data_df[39000:39500]
+    test_data_list = data_df[39500:]
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
