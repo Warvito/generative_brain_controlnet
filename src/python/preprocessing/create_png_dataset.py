@@ -10,8 +10,8 @@ from tqdm import tqdm
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--start", help="Starting index")
-    parser.add_argument("--stop", help="Stoping index")
+    parser.add_argument("--start", type=int, help="Starting index")
+    parser.add_argument("--stop", type=int, help="Stoping index")
 
     args = parser.parse_args()
     return args
