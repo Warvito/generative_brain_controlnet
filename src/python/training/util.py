@@ -56,15 +56,9 @@ def get_dataloader(
         [
             transforms.LoadImaged(keys=["t1w"]),
             transforms.EnsureChannelFirstd(keys=["t1w"]),
-            transforms.ScaleIntensityd(keys=["t1w"], minv=0.0, maxv=1.0),
-            transforms.SpatialCropd(keys=["t1w"], roi_start=[16, 16, 96], roi_end=[176, 240, 256]),
-            transforms.SpatialPadd(
-                keys=["t1w"],
-                spatial_size=[160, 224, 160],
-            ),
-            transforms.SpatialCropd(keys=["t1w"], roi_start=[0, 0, 70], roi_end=[160, 224, 80]),
-            transforms.RandSpatialCropd(keys=["t1w"], roi_size=(160, 224, 1), random_size=False),
-            transforms.Lambdad(keys=["t1w"], func=lambda x: x.squeeze(-1)),
+            transforms.Rotate90d(keys=["t1w"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+            transforms.Flipd(keys=["t1w"], spatial_axis=1),  # Fix flipped image read
+            transforms.ScaleIntensityRanged(keys=["t1w"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True),
             ApplyTokenizerd(keys=["report"]),
             transforms.ToTensord(keys=["t1w", "report"]),
         ]
@@ -74,15 +68,9 @@ def get_dataloader(
             [
                 transforms.LoadImaged(keys=["t1w"]),
                 transforms.EnsureChannelFirstd(keys=["t1w"]),
-                transforms.ScaleIntensityd(keys=["t1w"], minv=0.0, maxv=1.0),
-                transforms.SpatialCropd(keys=["t1w"], roi_start=[16, 16, 96], roi_end=[176, 240, 256]),
-                transforms.SpatialPadd(
-                    keys=["t1w"],
-                    spatial_size=[160, 224, 160],
-                ),
-                transforms.SpatialCropd(keys=["t1w"], roi_start=[0, 0, 70], roi_end=[160, 224, 80]),
-                transforms.RandSpatialCropd(keys=["t1w"], roi_size=(160, 224, 1), random_size=False),
-                transforms.Lambdad(keys=["t1w"], func=lambda x: x.squeeze(-1)),
+                transforms.Rotate90d(keys=["t1w"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+                transforms.Flipd(keys=["t1w"], spatial_axis=1),  # Fix flipped image read
+                transforms.ScaleIntensityRanged(keys=["t1w"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True),
                 transforms.RandFlipd(keys=["t1w"], prob=0.5, spatial_axis=0),
                 transforms.RandAffined(
                     keys=["t1w"],
@@ -102,15 +90,9 @@ def get_dataloader(
             [
                 transforms.LoadImaged(keys=["t1w"]),
                 transforms.EnsureChannelFirstd(keys=["t1w"]),
-                transforms.ScaleIntensityd(keys=["t1w"], minv=0.0, maxv=1.0),
-                transforms.SpatialCropd(keys=["t1w"], roi_start=[16, 16, 96], roi_end=[176, 240, 256]),
-                transforms.SpatialPadd(
-                    keys=["t1w"],
-                    spatial_size=[160, 224, 160],
-                ),
-                transforms.SpatialCropd(keys=["t1w"], roi_start=[0, 0, 70], roi_end=[160, 224, 80]),
-                transforms.RandSpatialCropd(keys=["t1w"], roi_size=(160, 224, 1), random_size=False),
-                transforms.Lambdad(keys=["t1w"], func=lambda x: x.squeeze(-1)),
+                transforms.Rotate90d(keys=["t1w"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+                transforms.Flipd(keys=["t1w"], spatial_axis=1),  # Fix flipped image read
+                transforms.ScaleIntensityRanged(keys=["t1w"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True),
                 transforms.RandShiftIntensityd(keys=["t1w"], offsets=0.05, prob=0.1),
                 transforms.RandAdjustContrastd(keys=["t1w"], gamma=(0.97, 1.03), prob=0.1),
                 transforms.ThresholdIntensityd(keys=["t1w"], threshold=1, above=False, cval=1.0),

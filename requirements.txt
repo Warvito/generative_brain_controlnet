@@ -1,6 +1,6 @@
 lpips==0.1.4
 pre-commit
-monai[nibabel]>=1.2.0rc1
+monai[nibabel, pillow]>=1.2.0rc1
 tensorboardX
 omegaconf==2.3.0
 spacy

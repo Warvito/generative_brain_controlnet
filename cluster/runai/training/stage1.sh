@@ -21,7 +21,7 @@ runai submit \
   --host-ipc \
   --project wds20 \
   --volume /nfs/home/wds20/projects/generative_brain_controlnet/:/project/ \
-  --volume /nfs/project/AMIGO/Biobank/derivatives/super-res/:/data/ \
+  --volume /nfs/home/wds20/datasets/Biobank/derivatives/2d_controlnet/:/data/ \
   --command -- bash /project/src/bash/start_script.sh \
     python3 /project/src/python/training/train_aekl.py \
       seed=${seed} \
