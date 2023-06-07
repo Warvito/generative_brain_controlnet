@@ -22,9 +22,9 @@ def main():
     data_dir = Path("/data/")
     sub_dirs = sorted([x for x in data_dir.iterdir() if x.is_dir()])
 
-    train_sub_dirs = sub_dirs[:38000]
-    val_sub_dirs = sub_dirs[38000:38500]
-    test_sub_dirs = sub_dirs[38500:]
+    train_sub_dirs = sub_dirs[:35000]
+    val_sub_dirs = sub_dirs[35000:35500]
+    test_sub_dirs = sub_dirs[35500:]
 
     data_df = create_datalist(train_sub_dirs)
     data_df.to_csv(output_dir / "train.tsv", index=False, sep="\t")
