@@ -25,8 +25,8 @@ def main(args):
 
     for image_path in tqdm(images_paths):
         if "unusable" not in str(image_path):
-            flair_path = str(image_path).replace("T1w", "FLAIR")
-            if Path(flair_path).exists():
+            flair_path = Path(str(image_path).replace("T1w", "FLAIR"))
+            if flair_path.exists():
                 new_sub_dir = new_data_dir / str(image_path.parents[1])[13:]
                 new_sub_dir.mkdir(parents=True, exist_ok=True)
 
