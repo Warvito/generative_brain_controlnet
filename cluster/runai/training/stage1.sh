@@ -1,21 +1,21 @@
 seed=42
 run_dir="aekl_v0"
-training_ids="/project/outputs/ids/test.tsv"
-validation_ids="/project/outputs/ids/test.tsv"
+training_ids="/project/outputs/ids/train.tsv"
+validation_ids="/project/outputs/ids/validation.tsv"
 config_file="/project/configs/stage1/aekl_v0.yaml"
-batch_size=128
-n_epochs=50
-adv_start=10
-eval_freq=5
-num_workers=32
+batch_size=256
+n_epochs=2000
+adv_start=200
+eval_freq=100
+num_workers=64
 experiment="AEKL"
 
 runai submit \
   --name controlnet-aekl-v0 \
   --image aicregistry:5000/wds20:control_brain \
   --backoff-limit 0 \
-  --gpu 4 \
-  --cpu 16 \
+  --gpu 8 \
+  --cpu 32 \
   --large-shm \
   --run-as-user \
   --host-ipc \
