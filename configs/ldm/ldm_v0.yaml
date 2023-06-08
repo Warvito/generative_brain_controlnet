@@ -1,0 +1,18 @@
+ldm:
+  base_lr: 0.000025
+  params:
+    spatial_dims: 2
+    in_channels: 3
+    out_channels: 3
+    num_res_blocks: 2
+    num_channels: [256, 512, 768]
+    attention_levels: [False, True, True]
+    with_conditioning: True
+    cross_attention_dim: 1024
+    num_head_channels: [0, 512, 768]
+  scheduler:
+    schedule: "scaled_linear_beta"
+    num_train_timesteps: 1000
+    beta_start: 0.0015
+    beta_end: 0.0205
+    prediction_type: "v_prediction"
