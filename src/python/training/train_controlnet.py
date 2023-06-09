@@ -126,7 +126,7 @@ def main(args):
     controlnet = controlnet.to(device)
     text_encoder = text_encoder.to(device)
 
-    optimizer = optim.AdamW(controlnet.parameters(), lr=config["ldm"]["base_lr"])
+    optimizer = optim.AdamW(controlnet.parameters(), lr=config["controlnet"]["base_lr"])
 
     # Get Checkpoint
     best_loss = float("inf")
