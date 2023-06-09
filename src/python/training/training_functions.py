@@ -562,7 +562,6 @@ def train_controlnet(
         device=device,
         step=len(train_loader) * start_epoch,
         writer=writer_val,
-        sample=False,
         scale_factor=scale_factor,
     )
     print(f"epoch {start_epoch} val loss: {val_loss:.4f}")
