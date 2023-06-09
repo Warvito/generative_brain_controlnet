@@ -1,4 +1,4 @@
-""" Training script for the diffusion model in the latent space of the pretraine AEKL model. """
+""" Training script for the controlnet model in the latent space of the pretraine AEKL model. """
 import argparse
 import warnings
 from pathlib import Path
@@ -7,13 +7,13 @@ import mlflow.pytorch
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from generative.networks.nets import DiffusionModelUNet
+from generative.networks.nets import ControlNet
 from generative.networks.schedulers import DDPMScheduler
 from monai.config import print_config
 from monai.utils import set_determinism
 from omegaconf import OmegaConf
 from tensorboardX import SummaryWriter
-from training_functions import train_ldm
+from training_functions import train_controlnet
 from transformers import CLIPTextModel
 from util import get_dataloader, log_mlflow
 
@@ -29,6 +29,7 @@ def parse_args():
     parser.add_argument("--validation_ids", help="Location of file with validation ids.")
     parser.add_argument("--config_file", help="Location of file with validation ids.")
     parser.add_argument("--stage1_uri", help="Path readable by load_model.")
+    parser.add_argument("--ddpm_uri", help="Path readable by load_model.")
     parser.add_argument("--scale_factor", type=float, help="Path readable by load_model.")
     parser.add_argument("--batch_size", type=int, default=256, help="Training batch size.")
     parser.add_argument("--n_epochs", type=int, default=25, help="Number of epochs to train.")
@@ -76,7 +77,7 @@ def main(args):
     writer_val = SummaryWriter(log_dir=str(run_dir / "val"))
 
     print("Getting data...")
-    cache_dir = output_dir / "cached_data_diffusion"
+    cache_dir = output_dir / "cached_data_controlnet"
     cache_dir.mkdir(exist_ok=True)
 
     train_loader, val_loader = get_dataloader(
@@ -85,19 +86,29 @@ def main(args):
         training_ids=args.training_ids,
         validation_ids=args.validation_ids,
         num_workers=args.num_workers,
-        model_type="diffusion",
+        model_type="controlnet",
     )
 
-    # Load Autoencoder to produce the latent representations
     print(f"Loading Stage 1 from {args.stage1_uri}")
     stage1 = mlflow.pytorch.load_model(args.stage1_uri)
     stage1 = Stage1Wrapper(model=stage1)
     stage1.eval()
 
-    # Create the diffusion model
+    print(f"Loading Diffusion rom {args.ddpm_uri}")
+    diffusion = mlflow.pytorch.load_model(args.ddpm_uri)
+    diffusion.eval()
+
     print("Creating model...")
     config = OmegaConf.load(args.config_file)
-    diffusion = DiffusionModelUNet(**config["ldm"].get("params", dict()))
+    controlnet = ControlNet(**config["controlnet"].get("params", dict()))
+
+    # Copy weights from the DM to the controlnet
+    controlnet.load_state_dict(diffusion.state_dict(), strict=False)
+
+    # Freeze the weights of the diffusion model
+    for p in diffusion.parameters():
+        p.requires_grad = False
+
     scheduler = DDPMScheduler(**config["ldm"].get("scheduler", dict()))
 
     text_encoder = CLIPTextModel.from_pretrained("stabilityai/stable-diffusion-2-1-base", subfolder="text_encoder")
@@ -107,13 +118,15 @@ def main(args):
     if torch.cuda.device_count() > 1:
         stage1 = torch.nn.DataParallel(stage1)
         diffusion = torch.nn.DataParallel(diffusion)
+        controlnet = torch.nn.DataParallel(controlnet)
         text_encoder = torch.nn.DataParallel(text_encoder)
 
     stage1 = stage1.to(device)
     diffusion = diffusion.to(device)
+    controlnet = controlnet.to(device)
     text_encoder = text_encoder.to(device)
 
-    optimizer = optim.AdamW(diffusion.parameters(), lr=config["ldm"]["base_lr"])
+    optimizer = optim.AdamW(controlnet.parameters(), lr=config["ldm"]["base_lr"])
 
     # Get Checkpoint
     best_loss = float("inf")
@@ -121,7 +134,7 @@ def main(args):
     if resume:
         print(f"Using checkpoint!")
         checkpoint = torch.load(str(run_dir / "checkpoint.pth"))
-        diffusion.load_state_dict(checkpoint["diffusion"])
+        controlnet.load_state_dict(checkpoint["controlnet"])
         # Issue loading optimizer https://github.com/pytorch/pytorch/issues/2830
         optimizer.load_state_dict(checkpoint["optimizer"])
         start_epoch = checkpoint["epoch"]
@@ -131,8 +144,9 @@ def main(args):
 
     # Train model
     print(f"Starting Training")
-    val_loss = train_ldm(
-        model=diffusion,
+    val_loss = train_controlnet(
+        controlnet=controlnet,
+        diffusion=diffusion,
         stage1=stage1,
         scheduler=scheduler,
         text_encoder=text_encoder,

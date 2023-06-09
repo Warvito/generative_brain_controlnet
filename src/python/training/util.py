@@ -115,6 +115,51 @@ def get_dataloader(
                 ),  # 49406: BOS token 49407: PAD token
             ]
         )
+    if model_type == "controlnet":
+        val_transforms = transforms.Compose(
+            [
+                transforms.LoadImaged(keys=["t1w", "flair"]),
+                transforms.EnsureChannelFirstd(keys=["t1w", "flair"]),
+                transforms.Rotate90d(keys=["t1w", "flair"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+                transforms.Flipd(keys=["t1w", "flair"], spatial_axis=1),  # Fix flipped image read
+                transforms.ScaleIntensityRanged(
+                    keys=["t1w", "flair"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True
+                ),
+                ApplyTokenizerd(keys=["report"]),
+                transforms.ToTensord(keys=["t1w", "flair", "report"]),
+            ]
+        )
+        train_transforms = transforms.Compose(
+            [
+                transforms.LoadImaged(keys=["t1w", "flair"]),
+                transforms.EnsureChannelFirstd(keys=["t1w", "flair"]),
+                transforms.Rotate90d(keys=["t1w", "flair"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+                transforms.Flipd(keys=["t1w", "flair"], spatial_axis=1),  # Fix flipped image read
+                transforms.ScaleIntensityRanged(
+                    keys=["t1w", "flair"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True
+                ),
+                transforms.RandFlipd(keys=["t1w", "flair"], prob=0.5, spatial_axis=0),
+                transforms.RandAffined(
+                    keys=["t1w", "flair"],
+                    translate_range=(-2, 2),
+                    scale_range=(-0.01, 0.01),
+                    spatial_size=[160, 224],
+                    prob=0.25,
+                ),
+                transforms.RandShiftIntensityd(keys=["t1w", "flair"], offsets=0.05, prob=0.1),
+                transforms.RandAdjustContrastd(keys=["t1w", "flair"], gamma=(0.97, 1.03), prob=0.1),
+                transforms.ThresholdIntensityd(keys=["t1w", "flair"], threshold=1, above=False, cval=1.0),
+                transforms.ThresholdIntensityd(keys=["t1w", "flair"], threshold=0, above=True, cval=0),
+                ApplyTokenizerd(keys=["report"]),
+                transforms.RandLambdad(
+                    keys=["report"],
+                    prob=0.10,
+                    func=lambda x: torch.cat(
+                        (49406 * torch.ones(1, 1), 49407 * torch.ones(1, x.shape[1] - 1)), 1
+                    ).long(),
+                ),  # 49406: BOS token 49407: PAD token
+            ]
+        )
 
     train_dicts = get_datalist(ids_path=training_ids)
     train_ds = PersistentDataset(data=train_dicts, transform=train_transforms, cache_dir=str(cache_dir))
