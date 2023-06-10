@@ -6,18 +6,18 @@ stage1_uri="/project/mlruns/837816334068618022/39336906f86c4cdc96fb6464b88c8c06/
 ddpm_uri="/project/mlruns/102676348294480761/a53f700f40184ff49f5f7e27fafece97/artifacts/final_model"
 config_file="/project/configs/controlnet/controlnet_v0.yaml"
 scale_factor=0.3
-batch_size=128
+batch_size=384
 n_epochs=150
 eval_freq=10
-num_workers=32
+num_workers=64
 experiment="CONTROLNET"
 
 runai submit \
   --name controlnet-controlnet-v0 \
   --image aicregistry:5000/wds20:control_brain \
   --backoff-limit 0 \
-  --gpu 1 \
-  --cpu 8 \
+  --gpu 4 \
+  --cpu 32 \
   --large-shm \
   --run-as-user \
   --host-ipc \
