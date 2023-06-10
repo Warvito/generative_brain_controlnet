@@ -31,7 +31,7 @@ def main(args):
     diffusion_model = mlflow.pytorch.load_model(args.diffusion_mlflow_path)
     torch.save(diffusion_model.state_dict(), output_dir / "diffusion_model.pth")
 
-    controlnet_model = mlflow.pytorch.load_model(args.diffusion_mlflow_path)
+    controlnet_model = mlflow.pytorch.load_model(args.controlnet_mlflow_path)
     torch.save(controlnet_model.state_dict(), output_dir / "controlnet_model.pth")
 
 
