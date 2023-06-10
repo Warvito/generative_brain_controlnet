@@ -165,7 +165,7 @@ def main(args):
     )
 
     log_mlflow(
-        model=diffusion,
+        model=controlnet,
         config=config,
         args=args,
         experiment=args.experiment,
