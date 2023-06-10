@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -14,53 +13,13 @@ import torch
 from generative.networks.nets import AutoencoderKL, ControlNet, DiffusionModelUNet
 from generative.networks.schedulers import DDIMScheduler
 from monai import transforms
-from monai.config import KeysCollection, print_config
+from monai.config import print_config
 from monai.data import CacheDataset
-from monai.data.image_reader import ImageReader
-from monai.transforms.transform import MapTransform, Transform
-from monai.utils import set_determinism
 from omegaconf import OmegaConf
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
-
-
-class ApplyTokenizer(Transform):
-    """Transformation to apply the CLIP tokenizer."""
-
-    def __init__(self) -> None:
-        self.tokenizer = CLIPTokenizer.from_pretrained("stabilityai/stable-diffusion-2-1-base", subfolder="tokenizer")
-
-    def __call__(self, text_input: str):
-        tokenized_sentence = self.tokenizer(
-            text_input,
-            padding="max_length",
-            max_length=self.tokenizer.model_max_length,
-            truncation=True,
-            return_tensors="pt",
-        )
-        return tokenized_sentence.input_ids
-
-
-class ApplyTokenizerd(MapTransform):
-    def __init__(
-        self,
-        keys: KeysCollection,
-        allow_missing_keys: bool = False,
-        *args,
-        **kwargs,
-    ) -> None:
-        super().__init__(keys, allow_missing_keys)
-        self._padding = ApplyTokenizer(*args, **kwargs)
-
-    def __call__(self, data, reader: Optional[ImageReader] = None):
-        d = dict(data)
-        for key in self.key_iterator(d):
-            data = self._padding(d[key])
-            d[key] = data
-
-        return d
 
 
 def get_datalist(
@@ -102,8 +61,7 @@ def get_test_dataloader(
             transforms.ScaleIntensityRanged(
                 keys=["t1w", "flair"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True
             ),
-            ApplyTokenizerd(keys=["report"]),
-            transforms.ToTensord(keys=["t1w", "flair", "report"]),
+            transforms.ToTensord(keys=["t1w", "flair"]),
         ]
     )
 
@@ -132,7 +90,7 @@ def parse_args():
     parser.add_argument("--stage1_config_file_path", help="Path to the .pth model from the stage1.")
     parser.add_argument("--diffusion_config_file_path", help="Path to the .pth model from the diffusion model.")
     parser.add_argument("--controlnet_config_file_path", help="Path to the .pth model from the diffusion model.")
-    parser.add_argument("--training_ids", help="Location of file with training ids.")
+    parser.add_argument("--test_ids", help="Location of file with test ids.")
     parser.add_argument("--start_seed", type=int, help="Path to the MLFlow artifact of the stage1.")
     parser.add_argument("--stop_seed", type=int, help="Path to the MLFlow artifact of the stage1.")
     parser.add_argument("--controlnet_scale", type=float, default=7.0, help="")
@@ -175,7 +133,7 @@ def main(args):
         num_train_timesteps=config["ldm"]["scheduler"]["num_train_timesteps"],
         beta_start=config["ldm"]["scheduler"]["beta_start"],
         beta_end=config["ldm"]["scheduler"]["beta_end"],
-        beta_schedule=config["ldm"]["scheduler"]["beta_schedule"],
+        schedule=config["ldm"]["scheduler"]["schedule"],
         prediction_type=config["ldm"]["scheduler"]["prediction_type"],
         clip_sample=False,
     )
@@ -184,7 +142,7 @@ def main(args):
     tokenizer = CLIPTokenizer.from_pretrained("stabilityai/stable-diffusion-2-1-base", subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained("stabilityai/stable-diffusion-2-1-base", subfolder="text_encoder")
 
-    prompt = ["T1-weighted image of a brain."]
+    prompt = ["", "T1-weighted image of a brain."]
     text_inputs = tokenizer(
         prompt,
         padding="max_length",
@@ -197,16 +155,38 @@ def main(args):
     prompt_embeds = text_encoder(text_input_ids.squeeze(1))
     prompt_embeds = prompt_embeds[0].to(device)
 
-    for i in range(args.start_seed, args.stop_seed):
-        set_determinism(seed=i)
-        noise = torch.randn((1, config["ldm"]["params"]["in_channels"], args.x_size, args.y_size)).to(device)
+    test_loader = get_test_dataloader(
+        batch_size=1,
+        test_ids=args.test_ids,
+        num_workers=args.num_workers,
+        upper_limit=1000,
+    )
+
+    pbar = tqdm(enumerate(test_loader), total=len(test_loader))
+    for i, x in pbar:
+        images = x["t1w"].to(device)
+        cond = x["flair"].to(device)
+
+        noise = torch.randn((1, config["controlnet"]["params"]["in_channels"], args.x_size, args.y_size)).to(device)
 
         with torch.no_grad():
             progress_bar = tqdm(scheduler.timesteps)
             for t in progress_bar:
                 noise_input = torch.cat([noise] * 2)
+                cond_input = torch.cat([cond] * 2)
+                down_block_res_samples, mid_block_res_sample = controlnet(
+                    x=noise_input,
+                    timesteps=torch.Tensor((t,)).to(noise.device).long(),
+                    context=prompt_embeds,
+                    controlnet_cond=cond_input,
+                )
+
                 model_output = diffusion(
-                    noise_input, timesteps=torch.Tensor((t,)).to(noise.device).long(), context=prompt_embeds
+                    x=noise_input,
+                    timesteps=torch.Tensor((t,)).to(noise.device).long(),
+                    context=prompt_embeds,
+                    down_block_additional_residuals=down_block_res_samples,
+                    mid_block_additional_residual=mid_block_res_sample,
                 )
                 noise_pred_uncond, noise_pred_text = model_output.chunk(2)
                 noise_pred = noise_pred_uncond + args.guidance_scale * (noise_pred_text - noise_pred_uncond)
@@ -219,7 +199,13 @@ def main(args):
         sample = np.clip(sample.cpu().numpy(), 0, 1)
         sample = (sample * 255).astype(np.uint8)
         im = Image.fromarray(sample[0, 0])
-        im.save(output_dir / f"sample_{i}.jpg")
+        im.save(output_dir / Path(x["t1w_meta_dict"]["filename_or_obj"][0]).name)
+
+        cond = (cond.cpu().numpy() * 255).astype(np.uint8)
+        images = (images.cpu().numpy() * 255).astype(np.uint8)
+        sample = np.concatenate([sample, cond, images], axis=3)
+        im = Image.fromarray(sample[0, 0])
+        im.save(output_dir / f"{Path(x['t1w_meta_dict']['filename_or_obj'][0]).stem}_comparison.png")
 
 
 if __name__ == "__main__":
