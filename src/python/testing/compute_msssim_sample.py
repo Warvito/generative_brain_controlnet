@@ -77,7 +77,7 @@ def main(args):
     )
 
     device = torch.device("cuda")
-    ms_ssim = MultiScaleSSIMMetric(spatial_dims=2, data_range=1.0)
+    ms_ssim = MultiScaleSSIMMetric(spatial_dims=2, data_range=1.0, kernel_size=7)
 
     print("Computing MS-SSIM...")
     ms_ssim_list = []
