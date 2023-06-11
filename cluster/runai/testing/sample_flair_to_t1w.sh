@@ -26,19 +26,20 @@ runai submit \
   --project wds20 \
   --volume /nfs/home/wds20/projects/generative_brain_controlnet/:/project/ \
   --volume /nfs/home/wds20/datasets/Biobank/derivatives/2d_controlnet/:/data/ \
-  --command -- python3 /project/src/python/testing/sample_images.py \
-      --output_dir=${output_dir} \
-      --stage1_path=${stage1_path} \
-      --diffusion_path=${diffusion_path} \
-      --controlnet_path=${controlnet_path} \
-      --stage1_config_file_path=${stage1_config_file_path} \
-      --diffusion_config_file_path=${diffusion_config_file_path} \
-      --controlnet_config_file_path=${controlnet_config_file_path} \
-      --test_ids=${test_ids} \
-      --controlnet_scale=${controlnet_scale} \
-      --guidance_scale=${guidance_scale} \
-      --x_size=${x_size} \
-      --y_size=${y_size} \
-      --scale_factor=${scale_factor} \
-      --num_workers=${num_workers} \
-      --num_inference_steps=${num_inference_steps}
+  --command -- bash /project/src/bash/start_script.sh \
+    python3 /project/src/python/testing/sample_flair_to_t1w.py \
+      output_dir=${output_dir} \
+      stage1_path=${stage1_path} \
+      diffusion_path=${diffusion_path} \
+      controlnet_path=${controlnet_path} \
+      stage1_config_file_path=${stage1_config_file_path} \
+      diffusion_config_file_path=${diffusion_config_file_path} \
+      controlnet_config_file_path=${controlnet_config_file_path} \
+      test_ids=${test_ids} \
+      controlnet_scale=${controlnet_scale} \
+      guidance_scale=${guidance_scale} \
+      x_size=${x_size} \
+      y_size=${y_size} \
+      scale_factor=${scale_factor} \
+      num_workers=${num_workers} \
+      num_inference_steps=${num_inference_steps}
