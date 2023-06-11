@@ -1,4 +1,4 @@
-output_dir="/project/outputs/samples/unsupervised/"
+output_dir="/project/outputs/samples/samples_unconditioned/"
 stage1_path="/project/outputs/trained_models/autoencoder.pth"
 diffusion_path="/project/outputs/trained_models/diffusion_model.pth"
 stage1_config_file_path="/project/configs/stage1/aekl_v0.yaml"
@@ -12,7 +12,7 @@ scale_factor=0.3
 num_inference_steps=200
 
 runai submit \
-  --name  controlnet-sampling \
+  --name  controlnet-sampling-unsupervised \
   --image aicregistry:5000/wds20:control_brain \
   --backoff-limit 0 \
   --gpu 1 \

@@ -1,4 +1,4 @@
-output_dir="/project/outputs/samples/v0/"
+output_dir="/project/outputs/samples/flair_to_t1w/"
 stage1_path="/project/outputs/trained_models/autoencoder.pth"
 diffusion_path="/project/outputs/trained_models/diffusion_model.pth"
 controlnet_path="/project/outputs/trained_models/controlnet_model.pth"
