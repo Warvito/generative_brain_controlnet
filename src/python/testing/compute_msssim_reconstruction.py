@@ -66,7 +66,7 @@ def main(args):
             x_recon = stage1.reconstruct(x)
 
         ms_ssim_list.append(ms_ssim(x, x_recon))
-        filenames.extend(batch["image_meta_dict"]["filename_or_obj"])
+        filenames.extend(batch["t1w_meta_dict"]["filename_or_obj"])
 
     ms_ssim_list = torch.cat(ms_ssim_list, dim=0)
 

@@ -86,7 +86,7 @@ def main(args):
         img = batch["t1w"]
         for batch2 in eval_loader_2:
             img2 = batch2["t1w"]
-            if batch["image_meta_dict"]["filename_or_obj"][0] == batch2["image_meta_dict"]["filename_or_obj"][0]:
+            if batch["t1w_meta_dict"]["filename_or_obj"][0] == batch2["t1w_meta_dict"]["filename_or_obj"][0]:
                 continue
             ms_ssim_list.append(ms_ssim(img.to(device), img2.to(device)).item())
         pbar.update()
