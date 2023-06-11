@@ -76,7 +76,7 @@ def main(args):
 
     # Samples
     samples_datalist = []
-    for sample_path in sorted(list(samples_dir.glob("*.jpg"))):
+    for sample_path in sorted(list(samples_dir.glob("*.png"))):
         samples_datalist.append(
             {
                 "image": str(sample_path),
@@ -86,12 +86,12 @@ def main(args):
 
     sample_transforms = transforms.Compose(
         [
-            transforms.LoadImaged(keys=["image"]),
-            transforms.EnsureChannelFirstd(keys=["image"]),
-            transforms.Rotate90d(keys=["image"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
-            transforms.Flipd(keys=["image"], spatial_axis=1),  # Fix flipped image read
-            transforms.ScaleIntensityRanged(keys=["image"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True),
-            transforms.ToTensord(keys=["image"]),
+            transforms.LoadImaged(keys=["t1w"]),
+            transforms.EnsureChannelFirstd(keys=["t1w"]),
+            transforms.Rotate90d(keys=["t1w"], k=-1, spatial_axes=(0, 1)),  # Fix flipped image read
+            transforms.Flipd(keys=["t1w"], spatial_axis=1),  # Fix flipped image read
+            transforms.ScaleIntensityRanged(keys=["t1w"], a_min=0.0, a_max=255.0, b_min=0.0, b_max=1.0, clip=True),
+            transforms.ToTensord(keys=["t1w"]),
         ]
     )
 
@@ -108,7 +108,7 @@ def main(args):
 
     samples_features = []
     for batch in tqdm(samples_loader):
-        img = batch["image"]
+        img = batch["t1w"]
         with torch.no_grad():
             outputs = get_features(img.to(device), radnet=model)
 
@@ -125,7 +125,7 @@ def main(args):
 
     test_features = []
     for batch in tqdm(test_loader):
-        img = batch["image"]
+        img = batch["t1w"]
         with torch.no_grad():
             outputs = get_features(img.to(device), radnet=model)
 
