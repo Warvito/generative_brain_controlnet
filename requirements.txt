@@ -1,14 +1,15 @@
-lpips==0.1.4
-pre-commit
-monai[nibabel, pillow]>=1.2.0rc1
-tensorboardX
-omegaconf==2.3.0
-spacy
-transformers[torch]
-isort
 black
-monai-generative
-mlflow
-pandas
+gdown
+isort
+lpips==0.1.4
 matplotlib
+mlflow
+monai-generative
+monai[nibabel, pillow]>=1.2.0rc1
+omegaconf==2.3.0
+pandas
+pre-commit
 pynvml
+spacy
+tensorboardX
+transformers[torch]
