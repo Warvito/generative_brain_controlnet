@@ -1,5 +1,5 @@
 seed=42
-sample_dir="/project/outputs/samples_unconditioned/"
+sample_dir="/project/outputs/samples/samples_unconditioned/"
 test_ids="/project/outputs/ids/test.tsv"
 num_workers=8
 batch_size=16

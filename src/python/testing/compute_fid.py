@@ -79,7 +79,7 @@ def main(args):
     for sample_path in sorted(list(samples_dir.glob("*.png"))):
         samples_datalist.append(
             {
-                "image": str(sample_path),
+                "t1w": str(sample_path),
             }
         )
     print(f"{len(samples_datalist)} images found in {str(samples_dir)}")
