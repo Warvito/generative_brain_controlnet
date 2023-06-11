@@ -60,7 +60,7 @@ def main(args):
     ms_ssim_list = []
     filenames = []
     for batch in tqdm(test_loader):
-        x = batch["image"].to(device)
+        x = batch["t1w"].to(device)
 
         with torch.no_grad():
             x_recon = stage1.reconstruct(x)
