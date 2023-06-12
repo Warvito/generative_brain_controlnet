@@ -24,7 +24,7 @@ is mounted in the Docker container.
 3) `cluster/runai/training/ldm.sh` - Command to start to execute in the server the training the diffusion model on the latent representation.
 The main python script in for this is the `src/python/training/train_ldm.py` script. The `--volume` flags indicate how the dataset
 is mounted in the Docker container.
-4`cluster/runai/training/controlnet.sh` - Command to start to execute in the server the training the ControlNet model using the pretrained LDM.
+4) `cluster/runai/training/controlnet.sh` - Command to start to execute in the server the training the ControlNet model using the pretrained LDM.
 The main python script in for this is the `src/python/training/train_controlnet.py` script. The `--volume` flags indicate how the dataset
 is mounted in the Docker container.
 
