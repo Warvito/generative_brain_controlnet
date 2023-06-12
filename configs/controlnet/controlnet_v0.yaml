@@ -9,6 +9,7 @@ controlnet:
     with_conditioning: True
     cross_attention_dim: 1024
     num_head_channels: [0, 512, 768]
+    conditioning_embedding_in_channels: 1
     conditioning_embedding_num_channels: [64, 128, 128, 256]
 
 
