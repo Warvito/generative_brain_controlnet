@@ -101,7 +101,7 @@ def main(args):
     )
     samples_loader = DataLoader(
         samples_ds,
-        batch_size=16,
+        batch_size=args.batch_size,
         shuffle=False,
         num_workers=8,
     )
@@ -117,7 +117,7 @@ def main(args):
 
     # Test set
     test_loader = get_test_dataloader(
-        batch_size=1,
+        batch_size=args.batch_size,
         test_ids=args.test_ids,
         num_workers=args.num_workers,
         upper_limit=1000,
