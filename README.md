@@ -4,6 +4,8 @@ Script to train a ControlNet (from [Adding Conditional Control to Text-to-Image 
 on UK BIOBANK dataset to transform FLAIRs to T1w 2D images using [MONAI Generative Models](https://github.com/Project-MONAI/GenerativeModels)
 package.
 
+![ControlNet Samples](https://github.com/Warvito/generative_brain_controlnet/blob/main/assets/figure_samples.png?raw=true)
+
 This repository is part of this Medium post.
 
 ## Instructions
