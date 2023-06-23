@@ -17,6 +17,7 @@ runai submit \
   --backoff-limit 0 \
   --gpu 4 \
   --cpu 64 \
+  --memory-limit 256G \
   --large-shm \
   --run-as-user \
   --host-ipc \
