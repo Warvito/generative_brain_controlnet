@@ -2,14 +2,13 @@ black
 gdown
 isort
 lpips==0.1.4
-matplotlib
-mlflow
 monai-generative
-monai[nibabel, pillow]>=1.2.0rc1
+monai[nibabel, pillow, matplotlib, pandas, mlflow, tqdm]>=1.2.0
+numpy==1.22.2
 omegaconf==2.3.0
-pandas
 pre-commit
+protobuf==3.20.3
 pynvml
 spacy
 tensorboardX
-transformers[torch]
+transformers[torch]==4.30.2
